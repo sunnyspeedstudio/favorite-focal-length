@@ -1,9 +1,15 @@
+# sunnyspeed studio
+# GitHub: https://github.com/sunnyspeedstudio/favorite-focal-length
+# YouTube: https://www.youtube.com/sunnyspeedstudio
+# Bili Bili: http://space.bilibili.com/36609936
+
+
 import subprocess
 import os
 import operator
 
 # all image folders need to be scanned (the script will go through all subfolders)
-imgFolders = ['full path to the image folder']
+imgFolders = ['full path to the image folder', 'another full path to the image folder']
 # all image extensions need to be scanned
 imgExtensions = ('.jpg', '.JPG', '.DNG', '.CR2', '.NEF', '.ARW')
 
