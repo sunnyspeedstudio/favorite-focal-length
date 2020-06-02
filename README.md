@@ -19,10 +19,11 @@ Find out your favorite camera focal length by scanning all your photos.
 ## Suggestions
    * Python 3 is recommended.
    * Try to scan one camera at a time, or cameras with same sensor size.
-   * **The focal length is not converted if it is not in 35mm.**
+   * **The focal length is not converted if it is not in 35mm full frame.**
 
 
 ## Example print out result
-![example print out](http://sunnyspeed.com/upload_img/20200601174043_Screenshot%20at%20Jun%2001%2010-38-54.png)
+![example print out](http://sunnyspeed.com/upload_img/20200602065044_Screenshot%20at%20Jun%2001%2023-50-04.png)
+![example print out](http://sunnyspeed.com/upload_img/20200602065221_Screenshot%20at%20Jun%2001%2023-49-47.png)
 
 That says everything, and I do love wider angle. I bought the Sony 24GM for my A7R3. Loving it!
