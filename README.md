@@ -1,29 +1,27 @@
 # Favorite Focal Length
-Find out your favorite camera focal length by scanning all your photos.
+Find out your favorite camera focal length and many other interesting facts about you and your cameras by scanning all your photos. Demo result: 
 
 
 ## Quick Guide
-1. Install exiftool https://exiftool.org/
+1. Install exiftool for retrieving exif info from photo https://exiftool.org/
 
-2. Check out this repo
+2. Install pygal for generating charts http://www.pygal.org/
 
-3. Make changes
+3. Check out this repo
+
+4. Make changes
    * **[imgFolders]** It can be a list of folders, but no need to include subfolders. (Subfolders are scanned automatically)
    * **[imgExtensions]** Add as needed
    * **[exiftoolPath]** Include the full path with .exe if running on Windows
    
-4. Run
-   * `python3 main.py`
+5. Run
+   * `python3 main.py` or `python main.py`
    
+6. The result is also generated as an HTML file in the same directory
 
-## Suggestions
+
+## Notes
    * Python 3 is recommended.
    * Try to scan one camera at a time, or cameras with same sensor size.
    * **The focal length is not converted if it is not in 35mm full frame.**
-
-
-## Example print out result
-![example print out](http://sunnyspeed.com/upload_img/20200602065044_Screenshot%20at%20Jun%2001%2023-50-04.png)
-![example print out](http://sunnyspeed.com/upload_img/20200602065221_Screenshot%20at%20Jun%2001%2023-49-47.png)
-
-That says everything, and I do love wider angle. I bought the Sony 24GM for my A7R3. Loving it!
+   * Only tested for very limited cameras. (Sony and Canon)
