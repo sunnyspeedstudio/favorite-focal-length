@@ -5,7 +5,7 @@ Find out your favorite camera focal length and many other interesting facts abou
 ## Quick Guide
 1. Install exiftool for retrieving exif info from photo https://exiftool.org/
 
-2. Install pygal for generating charts http://www.pygal.org/
+2. Install pygal for generating charts `pip install pygal` http://www.pygal.org/
 
 3. Check out this repo
 
