@@ -10,16 +10,20 @@ import os
 import operator
 import datetime
 import pygal
+import pickle
 
 
 # all image folders need to be scanned (the script will go through all subfolders)
-imgFolders = ['path1', 'path2']
+imgFolders = [  'path1',
+                'path2' ]
+# imgFolders = ['/Volumes/D5/MEDIA_READ_ONLY/Camera - Current/2018-03 - Sony A7R III/2020-06']
 # all image extensions need to be scanned
 imgExtensions = ('.jpg', '.JPG', '.DNG', '.CR2', '.NEF', '.ARW')
 # exiftool path
 exiftoolPath = 'exiftool'
 
 
+# funcions:
 def drawBarChart(title, data):
     value = []
     label = []
@@ -31,7 +35,6 @@ def drawBarChart(title, data):
     bar_chart.x_labels =label
     bar_chart.add(title, value)
     bar_chart.render_to_file(svgPath + '/' + title.lower().replace(' ', '_') + '.svg')
-
 
 def printResult(title, data, sort):
     print('\n')
@@ -48,17 +51,20 @@ def printResult(title, data, sort):
         data = sorted(num_data.items(), reverse=True)
         
         # format
-        if title == 'Aperture':
-            data = {str(x[0]).replace('10000.0', 'Unknown') : x[1] for x in data}
-            data = data.items()
         if title == 'Focal Length':
             data = {(str(x[0]) + 'mm') : x[1] for x in data}
             data = data.items()
+        if title == 'ISO':
+            data = {str(x[0]).replace('99999999', 'Unknown') : x[1] for x in data}
+            data = data.items()
+        if title == 'Aperture':
+            data = {str(x[0]).replace('99999.0', 'Unknown') : x[1] for x in data}
+            data = data.items()
         if title == 'Shutter Speed':
-            data = {(str(x[0]).replace('-', '1/')).replace('.0', '') : x[1] for x in data}
+            data = {(str(x[0]).replace('-', '1/')).replace('.0', '').replace('99999', 'Unknown') : x[1] for x in data}
             data = data.items()
         if title == 'Camera Temperature' or title == 'Ambient Temperature':
-            data = {(str(x[0]) + 'C').replace('10000C', 'Unknown') : x[1] for x in data}
+            data = {(str(x[0]) + 'C').replace('99999C', 'Unknown') : x[1] for x in data}
             data = data.items()
     else:
         data = data.items()
@@ -72,6 +78,8 @@ def svgObject(title):
     return '<object type="image/svg+xml" data="svg/' + title.lower().replace(' ', '_') + '.svg" style="height:90%"></object>'
 
 def createHTML():
+    separator = ', '
+
     html = """
         <h2>Scanned number of images: %s (total size: %s, average size: %s)</h2>
         <p>Scanned image folders: %s</p>
@@ -97,10 +105,19 @@ def createHTML():
     Html_file.close()
 
 
+# pickle file path
+pickleFilePath = 'image.pkl'
+# load saved images info from pickle file to save time
+# please delete local pickle file for a fresh new scan
+scannedImg = {}
+if os.path.exists(pickleFilePath):
+    scannedImg = pickle.load(open('image.pkl', 'rb'))
+
 # variables
 totalImg = 0
 fileSize = 0
 avergeSize = 0
+ # counters: 14 of them
 focalLength = {}
 lensID = {}
 focusDistance = {   'Unknown':0,
@@ -158,64 +175,83 @@ for imgFolder in imgFolders:
     for subfolder, folders, files in os.walk(imgFolder):
         for f in files:
             imgFile = subfolder + os.sep + f
+            
             if imgFile.endswith(imgExtensions):
-                # prepare the exif holder
                 exifInfo = {}
-                exifInfo['Focal Length'] = '0.0 mm'
-                exifInfo['Lens ID'] = 'Unknown'
-                exifInfo['Focus Distance 2'] = 'Unknown'        # sony
-                exifInfo['Focus Distance Lower'] = 'Unknown'    # canon
-                exifInfo['ISO'] = 'Unknown'
-                exifInfo['Aperture'] = '10000.0'
-                exifInfo['Shutter Speed'] = 'Unknown'
-                exifInfo['Create Date'] = 'Unknown'
-                exifInfo['Faces Detected'] = 'No or Unknown'
-                exifInfo['File Size'] = 'Unknown'
-                exifInfo['Camera Model Name'] = 'Unknown'
-                exifInfo['Camera Temperature'] = '10000 C'
-                exifInfo['Ambient Temperature'] = '10000 C'
-                exifInfo['Focus Mode'] = 'Unknown'
-                exifInfo['Sequence Length'] = 'Unknown'
-                exifInfo['Shot Number In Continuous Burst'] = 'Unknown'
+                if imgFile in scannedImg.keys():    # this image was already scanned
+                    exifInfo = scannedImg[imgFile]
+                else:
+                    # prepare the exif holder
+                    exifInfo['File Size'] = 'Unknown'               # not for charting
 
-                # retrieve exif from each image
-                process = subprocess.Popen([exiftoolPath, imgFile], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True) 
-                # create the exif array for the image
-                for line in process.stdout:
-                    kv = line.strip().split(':', 1)
-                    exifInfo[kv[0].strip()] = kv[1].strip()
-                process.kill()
+                    # the following strange numbers, such as 99999, is for handling the edge cases
+                    # if the exifInfo is changed below, please delete pickle file to do a fresh new scan
+                    exifInfo['Focal Length'] = '0.0 mm'
+                    exifInfo['Lens ID'] = 'Unknown'
+                    exifInfo['Focus Distance 2'] = 'Unknown'        # 1 of 2: sony
+                    exifInfo['Focus Distance Lower'] = 'Unknown'    # 2 of 2: canon
+                    exifInfo['ISO'] = '99999999'
+                    exifInfo['Aperture'] = '99999.0'
+                    exifInfo['Shutter Speed'] = '99999'
+                    exifInfo['Create Date'] = 'Unknown'             # break down to hour and day
+                    exifInfo['Faces Detected'] = 'No or Unknown'
+                    exifInfo['Camera Model Name'] = 'Unknown'
+                    exifInfo['Camera Temperature'] = '99999 C'
+                    exifInfo['Ambient Temperature'] = '99999 C'
+                    exifInfo['Focus Mode'] = 'Unknown'
+                    exifInfo['Sequence Length'] = 'Unknown'                     # 1 of 2: sony
+                    exifInfo['Shot Number In Continuous Burst'] = 'Unknown'     # 2 of 2: canon
+
+                    # retrieve exif from each image
+                    process = subprocess.Popen([exiftoolPath, imgFile], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True) 
+                    # create the exif array for the image
+                    for line in process.stdout:
+                        kv = line.strip().split(':', 1)
+                        if kv[0].strip() in exifInfo:   # only save the tags we need
+                            exifInfo[kv[0].strip()] = kv[1].strip()
+                    process.kill()
+
+                    # update scannedImg with raw exif info, and save it back to pickle file
+                    scannedImg[imgFile] = exifInfo
+                    pickle.dump(scannedImg, open(pickleFilePath, "wb"))
+
 
                 # special treatments on the exif data
-                # 1. focal length: remove '35 mm equivalent', eg: 2.7 mm (35 mm equivalent: 30.0 mm)
-                kv = exifInfo['Focal Length'].split(' (', 1)
-                exifInfo['Focal Length'] = kv[0].replace(' mm', '')
-                # 2. hour and day: grab hour and day of the week from the date, eg: 2020:05:02 13:57:57.072-07:00
+                # 1. file size: remove MB in file size, eg: 8.3 MB
+                kv = exifInfo['File Size'].split(' ')
+                fileSize += float(kv[0])
+
+                # 2. focal length: remove '35 mm equivalent', eg: 2.7 mm (35 mm equivalent: 30.0 mm) or 0.0 mm
+                kv = exifInfo['Focal Length'].split(' ', 1)
+                exifInfo['Focal Length'] = kv[0]
+
+                # 3. focus distance: Canon is different from Sony
+                if exifInfo['Focus Distance 2'] == 'Unknown' and exifInfo['Focus Distance Lower'] != 'Unknown':
+                    exifInfo['Focus Distance 2'] = exifInfo['Focus Distance Lower']     # canon
+                if exifInfo['Focus Distance 2'] != 'Unknown':
+                    exifInfo['Focus Distance 2'] = exifInfo['Focus Distance 2'].replace(' m', '')   # remove 'm'
+
+                # 4. shutter speed: replace 1/ in shutter speed with - for sorting purpose, eg: 1/125
+                exifInfo['Shutter Speed'] = exifInfo['Shutter Speed'].replace('1/', '-')
+
+                # 5. hour and day: grab hour and day of the week from the date, eg: 2020:05:02 13:57:57.072-07:00
                 kv = exifInfo['Create Date'].split(' ')
                 kv1 = kv[0].split(':')
                 d = datetime.datetime(int(kv1[0]), int(kv1[1]), int(kv1[2]))
                 exifInfo['Create Day'] = d.strftime('%A')   # day of the week
                 kv2 = kv[1].split(':')
                 exifInfo['Create Hour'] = kv2[0]    # hour
-                # 3. focus distance: Canon is different from Sony
-                if exifInfo['Focus Distance 2'] == 'Unknown' and exifInfo['Focus Distance Lower'] != 'Unknown':
-                    exifInfo['Focus Distance 2'] = exifInfo['Focus Distance Lower']     # canon
-                if exifInfo['Focus Distance 2'] != 'Unknown':
-                    kv = exifInfo['Focus Distance 2'].split(' ')    # remove 'm'
-                    exifInfo['Focus Distance 2'] = kv[0]
-                # 4. file size: remove MB in file size, eg: 8.3 MB
-                kv = exifInfo['File Size'].split(' ')
-                fileSize += float(kv[0])
-                # 5. shutter speed: replace 1/ in shutter speed with - for sorting purpose, eg: 1/125
-                exifInfo['Shutter Speed'] = exifInfo['Shutter Speed'].replace('1/', '-')
+
                 # 6. temperature: remove C in the camera temperature, eg: 14 C
                 exifInfo['Camera Temperature'] = exifInfo['Camera Temperature'].replace(' C', '')
                 exifInfo['Ambient Temperature'] = exifInfo['Ambient Temperature'].replace(' C', '')
+                
                 # 7. shot mode
                 if exifInfo['Sequence Length'] == 'Continuous' or (exifInfo['Shot Number In Continuous Burst'] != '0' and exifInfo['Shot Number In Continuous Burst'] != 'Unknown'):
                     exifInfo['Sequence Length'] = 'Continuous'
                 else:
                     exifInfo['Sequence Length'] = 'Single'
+
 
                 # counting
                 # focal length
@@ -233,6 +269,8 @@ for imgFolder in imgFolders:
                 # focus distance
                 if exifInfo['Focus Distance 2'] == 'Unknown':
                     focusDistance['Unknown'] += 1
+                elif exifInfo['Focus Distance 2'] == 'inf':
+                    focusDistance['>10m'] += 1
                 else:
                     if float(exifInfo['Focus Distance 2']) <= 0.2:
                         focusDistance['0~0.2m'] += 1
@@ -320,14 +358,15 @@ for imgFolder in imgFolders:
                         (exifInfo['Focal Length'] + 'mm'), ':', 
                         exifInfo['Lens ID'], ':', 
                         exifInfo['Focus Distance 2'], ':', 
-                        exifInfo['ISO'], ':', 
-                        exifInfo['Aperture'].replace('10000.0', 'Unknown'), ':', 
-                        exifInfo['Shutter Speed'].replace('-', '1/'), ':', 
+                        exifInfo['ISO'].replace('99999999', 'Unknown'), ':', 
+                        exifInfo['Aperture'].replace('99999.0', 'Unknown'), ':', 
+                        exifInfo['Shutter Speed'].replace('-', '1/').replace('99999', 'Unknown'), ':', 
                         exifInfo['Create Day'], ':', 
                         exifInfo['Create Hour'], ':', 
                         exifInfo['Faces Detected'], ':', 
-                        (exifInfo['Camera Temperature'] + 'C').replace('10000C', 'Unknown'), ':',
-                        (exifInfo['Ambient Temperature'] + 'C').replace('10000C', 'Unknown'), ':',
+                        exifInfo['Camera Model Name'], ':',
+                        (exifInfo['Camera Temperature'] + 'C').replace('99999C', 'Unknown'), ':',
+                        (exifInfo['Ambient Temperature'] + 'C').replace('99999C', 'Unknown'), ':',
                         exifInfo['Focus Mode'], ':',
                         exifInfo['Sequence Length'])
 
@@ -363,7 +402,6 @@ printResult('Ambient Temperature', ambientTemp, 'key')
 printResult('Focus Mode', focusMode, 'value')
 printResult('Shot Mode', shotMode, 'no')
 
-separator = ', '
 createHTML()
 
 print('\n\nThe result is saved in folder ' + htmlPath)
