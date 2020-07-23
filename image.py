@@ -16,7 +16,7 @@ import pickle
 # all image folders need to be scanned (the script will go through all subfolders)
 imgFolders = [  'path1',
                 'path2' ]
-# imgFolders = ['/Volumes/D5/MEDIA_READ_ONLY/Camera - Current/2018-03 - Sony A7R III/2020-06']
+# imgFolders = ['/Volumes/MEDIA/Camera - Current/2020-07 - Sony ZV-1/2020-07']
 # all image extensions need to be scanned
 imgExtensions = ('.jpg', '.JPG', '.DNG', '.CR2', '.NEF', '.ARW')
 # exiftool path
@@ -85,7 +85,7 @@ def createHTML():
         <p>Scanned image folders: %s</p>
         <p>Powered by sunnyspeed studio @ <a href="https://github.com/sunnyspeedstudio/favorite-focal-length">GitHub</a>
         <a href="https://www.youtube.com/sunnyspeedstudio">YouTube</a></p>
-    """%(totalImg, fileSize, avergeSize, separator.join(imgFolders))
+    """%(totalImg, fileSize, averageSize, separator.join(imgFolders))
     html += svgObject('Camera')
     html += svgObject('Focal Length')
     html += svgObject('Lens')
@@ -116,7 +116,7 @@ if os.path.exists(pickleFilePath):
 # variables
 totalImg = 0
 fileSize = 0
-avergeSize = 0
+averageSize = 0
  # counters: 14 of them
 focalLength = {}
 lensID = {}
@@ -373,36 +373,40 @@ for imgFolder in imgFolders:
 
 # print out final results
 print('\nTotal scanned number of images:', totalImg)
-avergeSize = str("{:.1f}".format(float(fileSize / totalImg))) + 'MB'
-if fileSize < 1024:
-    fileSize = str(int(fileSize)) + 'MB'
+if (totalImg == 0):
+    print('\nNo image is found.')
 else:
-    fileSize = str(int(fileSize / 1024)) + 'GB'
-print('Total size:', fileSize)
-print('Average size:', avergeSize)
+    averageSize = str("{:.1f}".format(float(fileSize / totalImg))) + 'MB'
+    if fileSize < 1024:
+        fileSize = str(int(fileSize)) + 'MB'
+    else:
+        fileSize = str(int(fileSize / 1024)) + 'GB'
+    print('Total size:', fileSize)
+    print('Average size:', averageSize)
 
-# create a new folder to store charts and html
-htmlPath = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-os.makedirs(htmlPath)
-svgPath = htmlPath + '/svg'
-os.makedirs(svgPath)
+    # create a new folder to store charts and html
+    htmlPath = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    os.makedirs(htmlPath)
+    svgPath = htmlPath + '/svg'
+    os.makedirs(svgPath)
 
-printResult('Focal Length', focalLength, 'key')
-printResult('Lens', lensID, 'value')
-printResult('Camera', camera, 'value')
-printResult('Focus Distance', focusDistance, 'no')
-printResult('ISO', iso, 'key')
-printResult('Aperture', aperture, 'key')
-printResult('Shutter Speed', shutterSpeed, 'key')
-printResult('Created Hour', createHour, 'no')
-printResult('Created Day', createDay, 'no')
-printResult('Faces Detected', facesDetected, 'value')
-printResult('Camera Temperature', cameraTemp, 'key')
-printResult('Ambient Temperature', ambientTemp, 'key')
-printResult('Focus Mode', focusMode, 'value')
-printResult('Shot Mode', shotMode, 'no')
+    printResult('Focal Length', focalLength, 'key')
+    printResult('Lens', lensID, 'value')
+    printResult('Camera', camera, 'value')
+    printResult('Focus Distance', focusDistance, 'no')
+    printResult('ISO', iso, 'key')
+    printResult('Aperture', aperture, 'key')
+    printResult('Shutter Speed', shutterSpeed, 'key')
+    printResult('Created Hour', createHour, 'no')
+    printResult('Created Day', createDay, 'no')
+    printResult('Faces Detected', facesDetected, 'value')
+    printResult('Camera Temperature', cameraTemp, 'key')
+    printResult('Ambient Temperature', ambientTemp, 'key')
+    printResult('Focus Mode', focusMode, 'value')
+    printResult('Shot Mode', shotMode, 'no')
 
-createHTML()
+    createHTML()
 
-print('\n\nThe result is saved in folder ' + htmlPath)
+    print('\n\nThe result is saved in folder ' + htmlPath)
+
 print('Thank you for using this tool!\n\n')

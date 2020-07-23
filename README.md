@@ -1,5 +1,11 @@
 # Favorite Focal Length
-Find out your favorite camera focal length and many other interesting facts about you and your cameras by scanning all your photos. Demo result: http://sunnyspeed.com/share/20200605-sony-a7r3/output.html
+Find out your favorite camera focal length and many other interesting facts about you and your cameras by scanning all your photos.
+
+
+# Demo
+  * Images: http://sunnyspeed.com/share/20200605-sony-a7r3/output.html
+  * Videos: http://sunnyspeed.com/share/20200722-sony-video/output.html
+
 
 
 ## Quick Guide
@@ -15,7 +21,8 @@ Find out your favorite camera focal length and many other interesting facts abou
    * **[exiftoolPath]** Include the full path with .exe if running on Windows
    
 5. Run
-   * `python3 main.py` or `python main.py`
+   * `python3 image.py` or `python image.py` for images
+   * `python3 video.py` or `python video.py` for videos
    
 6. The result is also generated as an HTML file in the same directory
 
@@ -25,3 +32,4 @@ Find out your favorite camera focal length and many other interesting facts abou
    * Try to scan one camera at a time, or cameras with same sensor size.
    * **The focal length is not converted if it is not in 35mm full frame.**
    * Only tested for very limited cameras. (Sony and Canon)
+   * If got an error on the .pkl file, please delete the .pkl file and try again.
