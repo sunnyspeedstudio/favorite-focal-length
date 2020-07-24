@@ -22,7 +22,7 @@ Find out your favorite camera focal length and many other interesting facts abou
    
 5. Run
    * `python3 image.py` or `python image.py` for images
-   * `python3 video.py` or `python video.py` for videos
+   * `python3 video.py` or `python video.py` for videos (only tested for sony camera)
    
 6. The result is also generated as an HTML file in the same directory
 
